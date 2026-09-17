@@ -35,6 +35,8 @@ RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.co
 
 # install dependencies
 RUN npm i
+# Build VM evaluation bundles required at runtime by src/vm
+RUN npm run build:vm
 # build the client application
 WORKDIR /app/portal
 # Standalone Docker builds are outside the Form.io monorepo; map workspace: protocol to published packages.
