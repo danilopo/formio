@@ -12,13 +12,11 @@ COPY config/ /app/config
 COPY *.js /app/
 COPY *.txt /app/
 COPY package.json /app/
-COPY package-lock.json /app/
 COPY default-template.json /app/
 
 COPY portal/src /app/portal/src
 COPY portal/public /app/portal/public
 COPY portal/package.json /app/portal/package.json
-COPY portal/package-lock.json /app/portal/package-lock.json
 COPY portal/tsconfig.json /app/portal/tsconfig.json
 COPY portal/webpack.config.mjs /app/portal/webpack.config.mjs
 
@@ -37,12 +35,18 @@ RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.co
 
 # install dependencies
 RUN npm i
+# Build VM evaluation bundles required at runtime by src/vm
+RUN npm run build:vm
 # build the client application
 WORKDIR /app/portal
-RUN npm i
+# Standalone Docker builds are outside the Form.io monorepo; map workspace: protocol to published packages.
+RUN node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); const map={'@formio/js':'^5.5.2','@formio/react':'^6.2.1','@formio/core':'^2.8.2'}; for (const s of ['dependencies','devDependencies']) { for (const [k,v] of Object.entries(p[s]||{})) { if (String(v).startsWith('workspace:')) { if (!map[k]) throw new Error('No npm mapping for '+k); p[s][k]=map[k]; } } } fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\n');"
+RUN npm i --legacy-peer-deps && npm i --no-save --legacy-peer-deps ajv@8.17.1
 RUN npm run build
 
 RUN apk del git
+
+WORKDIR /app
 
 # Set this to inspect more from the application. Examples:
 #   DEBUG=formio:db (see index.js for more)
