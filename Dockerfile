@@ -12,7 +12,6 @@ COPY config/ /app/config
 COPY *.js /app/
 COPY *.txt /app/
 COPY package.json /app/
-COPY package-lock.json /app/
 COPY default-template.json /app/
 
 COPY portal/src /app/portal/src
