@@ -37,7 +37,9 @@ RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.co
 RUN npm i
 # build the client application
 WORKDIR /app/portal
-RUN npm i
+# Standalone Docker builds are outside the Form.io monorepo; map workspace: protocol to published packages.
+RUN node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); const map={'@formio/js':'^5.5.2','@formio/react':'^6.2.1','@formio/core':'^2.8.2'}; for (const s of ['dependencies','devDependencies']) { for (const [k,v] of Object.entries(p[s]||{})) { if (String(v).startsWith('workspace:')) { if (!map[k]) throw new Error('No npm mapping for '+k); p[s][k]=map[k]; } } } fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\n');"
+RUN npm i --legacy-peer-deps && npm i --no-save --legacy-peer-deps ajv@8.17.1
 RUN npm run build
 
 RUN apk del git
