@@ -3,7 +3,7 @@ const defaultBase = 'mongodb://localhost:27017';
 const mongoBase = process.env.MONGO ? process.env.MONGO.replace(/\/[^/]*$/, '') : defaultBase;
 
 module.exports = {
-  port: 3001,
+  port: Number(process.env.PORT) || 3001,
   appPort: 8080,
   host: 'localhost:3001',
   protocol: 'http',
